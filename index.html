@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de IMC Profesional</title>
+    <!-- Lucide Icons (Solo se mantiene JS para íconos) -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap');
+        
+        :root {
+            /* Colors */
+            --slate-50: #f8fafc;
+            --slate-100: #f1f5f9;
+            --slate-200: #e2e8f0;
+            --slate-400: #94a3b8;
+            --slate-500: #64748b;
+            --slate-600: #475569;
+            --slate-800: #1e293b;
+            --slate-900: #0f172a;
+            
+            --indigo-50: #eef2ff;
+            --indigo-100: #e0e7ff;
+            --indigo-200: #c7d2fe;
+            --indigo-500: #6366f1;
+            --indigo-600: #4f46e5;
+            --indigo-900: #312e81;
+            
+            --sky-50: #f0f9ff;
+            --sky-100: #e0f2fe;
+            --sky-200: #bae6fd;
+            --sky-400: #38bdf8;
+            --sky-600: #0284c7;
+            --sky-700: #0369a1;
+            
+            --emerald-50: #ecfdf5;
+            --emerald-100: #d1fae5;
+            --emerald-200: #a7f3d0;
+            --emerald-400: #34d399;
+            --emerald-600: #059669;
+            --emerald-700: #047857;
+            
+            --orange-50: #fff7ed;
+            --orange-100: #ffedd5;
+            --orange-200: #fed7aa;
+            --orange-400: #fb923c;
+            --orange-600: #ea580c;
+            --orange-700: #c2410c;
+            
+            --red-50: #fef2f2;
+            --red-100: #fee2e2;
+            --red-200: #fecaca;
+            --red-400: #f87171;
+            --red-600: #dc2626;
+            --red-700: #b91c1c;
+
+            /* Spacing & Layout */
+            --border-radius-lg: 0.5rem;
+            --border-radius-xl: 0.75rem;
+            --border-radius-2xl: 1.5rem;
+            --border-radius-full: 9999px;
+            
+            --transition-bounce: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            --transition-smooth: all 0.3s ease;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body { 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            background-color: var(--slate-50);
+            color: var(--slate-800);
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            padding: 1.5rem;
+            line-height: 1.5;
+        }
+
+        /* Removes spinner from number inputs */
+        input[type=number]::-webkit-inner-spin-button, 
+        input[type=number]::-webkit-outer-spin-button { 
+            -webkit-appearance: none; 
+            margin: 0; 
+        }
+        input[type=number] {
+            -moz-appearance: textfield;
+        }
+
+        .app-container {
+            max-width: 64rem; /* 1024px */
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+
+        @media (min-width: 1024px) {
+            .main-grid {
+                grid-template-columns: 5fr 7fr;
+            }
+        }
+
+        .custom-card {
+            background: white;
+            border-radius: var(--border-radius-2xl);
+            padding: 1.5rem;
+            border: 1px solid var(--slate-100);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+            position: relative;
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--slate-900);
+            margin-bottom: 1.5rem;
+        }
+
+        .card-header .icon {
+            color: var(--indigo-600);
+            width: 1.5rem;
+            height: 1.5rem;
+        }
+
+        .toggle-container {
+            display: flex;
+            background-color: var(--slate-100);
+            padding: 0.25rem;
+            border-radius: var(--border-radius-xl);
+            margin-bottom: 1.5rem;
+        }
+
+        .toggle-btn {
+            flex: 1;
+            padding: 0.5rem 0;
+            font-size: 0.75rem;
+            font-weight: 600;
+            border-radius: var(--border-radius-lg);
+            border: none;
+            background: transparent;
+            color: var(--slate-500);
+            cursor: pointer;
+            transition: var(--transition-bounce);
+            font-family: inherit;
+        }
+
+        .toggle-btn.active {
+            background: white;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+            color: var(--indigo-600);
+        }
+
+        .input-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .field-label {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--slate-400);
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
+        .gender-options {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .gender-btn {
+            flex: 1;
+            padding: 0.75rem 0;
+            border-radius: var(--border-radius-xl);
+            border: 2px solid var(--slate-100);
+            background: transparent;
+            color: var(--slate-400);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+            font-family: inherit;
+        }
+
+        .gender-btn span {
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+
+        .gender-btn.active {
+            border-color: var(--indigo-600);
+            background-color: var(--indigo-50);
+            color: var(--indigo-600);
+        }
+
+        .input-wrapper {
+            position: relative;
+            margin-bottom: 1.5rem;
+        }
+
+        .input-field {
+            width: 100%;
+            background-color: var(--slate-50);
+            border: 1px solid var(--slate-200);
+            border-radius: var(--border-radius-xl);
+            padding: 1rem;
+            padding-right: 3rem;
+            font-family: inherit;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        .input-field:focus {
+            border-color: var(--indigo-500);
+        }
+
+        .input-field.large {
+            font-size: 1.25rem;
+            font-weight: 700;
+        }
+
+        .input-field.medium {
+            font-size: 0.875rem;
+            font-weight: 700;
+        }
+
+        .input-unit {
+            position: absolute;
+            right: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--slate-400);
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+
+        .imperial-grid {
+            display: none;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem;
+        }
+
+        .imperial-grid.active {
+            display: grid;
+        }
+
+        .metric-wrapper.hidden {
+            display: none;
+        }
+
+        .result-card-decorator {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 8px;
+            height: 100%;
+            background-color: var(--indigo-600);
+        }
+
+        .result-header {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--slate-400);
+            margin-bottom: 0.75rem;
+        }
+
+        .result-display {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .result-value {
+            font-size: 3.75rem;
+            font-weight: 900;
+            color: var(--slate-900);
+            letter-spacing: -0.025em;
+            line-height: 1;
+        }
+
+        .badge {
+            padding: 0.5rem 1rem;
+            border-radius: var(--border-radius-full);
+            font-size: 0.75rem;
+            font-weight: 700;
+            border: 1px solid;
+            display: inline-block;
+        }
+
+        /* Status Colors */
+        .badge-underweight { color: var(--sky-600); background: var(--sky-50); border-color: var(--sky-200); }
+        .badge-healthy { color: var(--emerald-600); background: var(--emerald-50); border-color: var(--emerald-200); }
+        .badge-overweight { color: var(--orange-600); background: var(--orange-50); border-color: var(--orange-200); }
+        .badge-obesity { color: var(--red-600); background: var(--red-50); border-color: var(--red-200); }
+
+        .gauge-container {
+            position: relative;
+            height: 14px;
+            width: 100%;
+            background-color: var(--slate-100);
+            border-radius: var(--border-radius-full);
+            overflow: hidden;
+            display: flex;
+            margin-bottom: 0.5rem;
+        }
+
+        .gauge-segment {
+            height: 100%;
+            opacity: 0.6;
+        }
+
+        .gauge-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 10px;
+            font-weight: 700;
+            color: var(--slate-400);
+            text-transform: uppercase;
+        }
+
+        #gauge-marker {
+            position: absolute;
+            top: 0;
+            height: 100%;
+            width: 3px;
+            background-color: var(--slate-900);
+            z-index: 20;
+            box-shadow: 0 0 10px rgba(0,0,0,0.2);
+            transition: var(--transition-bounce);
+        }
+
+        #gauge-marker::after {
+            content: '';
+            position: absolute;
+            top: -4px;
+            left: -5px;
+            width: 13px;
+            height: 13px;
+            background-color: var(--slate-900);
+            border: 2px solid white;
+            border-radius: 50%;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+
+        @media (min-width: 768px) {
+            .info-grid { grid-template-columns: 1fr 1fr; }
+        }
+
+        .info-card {
+            background: white;
+            border-radius: var(--border-radius-2xl);
+            padding: 1.5rem;
+            border: 1px solid var(--slate-100);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+        }
+
+        .info-card.diet-card {
+            border-color: var(--indigo-100);
+            background-color: rgba(238, 242, 255, 0.3); /* indigo-50/30 */
+        }
+
+        .info-header {
+            font-size: 0.875rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--indigo-900);
+        }
+
+        .dynamic-list { display: flex; flex-direction: column; gap: 1rem; }
+
+        /* Habit Items */
+        .habit-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+        }
+        .habit-icon-wrapper {
+            padding: 0.5rem;
+            background-color: white;
+            border-radius: var(--border-radius-lg);
+            color: var(--indigo-600);
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+            border: 1px solid var(--indigo-50);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .habit-title { font-weight: 700; color: var(--slate-800); font-size: 10px; text-transform: uppercase; }
+        .habit-desc { color: var(--slate-500); font-size: 11px; line-height: 1.25; margin-top: 0.125rem; }
+
+        /* Diet Items */
+        .diet-item {
+            position: relative;
+            padding-left: 1rem;
+            border-left: 2px solid var(--indigo-200);
+        }
+        .diet-title { font-weight: 700; color: var(--indigo-900); font-size: 10px; text-transform: uppercase; }
+        .diet-desc { color: var(--slate-600); font-size: 11px; line-height: 1.375; margin-top: 0.25rem; }
+
+        .ref-header {
+            font-size: 0.875rem;
+            font-weight: 700;
+            color: var(--slate-900);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .ref-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+        
+        @media (min-width: 768px) { .ref-grid { grid-template-columns: 1fr 1fr; } }
+        @media (min-width: 1024px) { .ref-grid { grid-template-columns: 1fr 1fr 1fr 1fr; } }
+
+        .ref-item {
+            padding: 1rem;
+            border-radius: var(--border-radius-xl);
+            border: 1px solid;
+            text-align: center;
+        }
+
+        .ref-item.underweight { border-color: var(--sky-100); background-color: var(--sky-50); }
+        .ref-item.normal { border-color: var(--emerald-100); background-color: var(--emerald-50); }
+        .ref-item.overweight { border-color: var(--orange-100); background-color: var(--orange-50); }
+        .ref-item.obesity { border-color: var(--red-100); background-color: var(--red-50); }
+
+        .ref-label { font-weight: 700; text-transform: uppercase; letter-spacing: 0.025em; margin-bottom: 0.25rem; font-size: 10px; }
+        .ref-val { font-weight: 700; font-size: 1.125rem; }
+
+        /* Specific ref colors */
+        .ref-item.underweight .ref-label { color: var(--sky-700); }
+        .ref-item.underweight .ref-val { color: var(--sky-600); }
+        .ref-item.normal .ref-label { color: var(--emerald-700); }
+        .ref-item.normal .ref-val { color: var(--emerald-600); }
+        .ref-item.overweight .ref-label { color: var(--orange-700); }
+        .ref-item.overweight .ref-val { color: var(--orange-600); }
+        .ref-item.obesity .ref-label { color: var(--red-700); }
+        .ref-item.obesity .ref-val { color: var(--red-600); }
+
+        .footer-note {
+            text-align: center;
+            padding-top: 1.5rem;
+            padding-bottom: 0.5rem;
+            font-size: 10px;
+            color: var(--slate-400);
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        
+        <!-- Grid Principal (Calculadora y Resultados) -->
+        <div class="main-grid">
+            
+            <!-- Bloque Izquierdo: Configuración -->
+            <div style="display: flex; flex-direction: column; gap: 1rem;">
+                <div class="custom-card">
+                    <header class="card-header">
+                        <i data-lucide="scale" class="icon"></i>
+                        Calculadora de IMC
+                    </header>
+
+                    <div class="toggle-container">
+                        <button id="btn-metric" onclick="setSystem('metric')" class="toggle-btn active">
+                            Métrico (kg/cm)
+                        </button>
+                        <button id="btn-imperial" onclick="setSystem('imperial')" class="toggle-btn">
+                            Imperial (lb/ft)
+                        </button>
+                    </div>
+
+                    <div class="input-row">
+                        <div>
+                            <label class="field-label">Género</label>
+                            <div class="gender-options">
+                                <button onclick="setGender('male')" id="gender-male" class="gender-btn active">
+                                    <i data-lucide="user" size="16"></i> <span>M</span>
+                                </button>
+                                <button onclick="setGender('female')" id="gender-female" class="gender-btn">
+                                    <i data-lucide="user" size="16"></i> <span>F</span>
+                                </button>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="field-label">Edad</label>
+                            <input type="number" id="age" value="25" class="input-field medium">
+                        </div>
+                    </div>
+
+                    <div class="input-wrapper">
+                        <label class="field-label">Altura</label>
+                        <div id="metric-height" class="metric-wrapper">
+                            <input type="number" id="height-cm" value="175" step="1" class="input-field large">
+                            <span class="input-unit">cm</span>
+                        </div>
+                        <div id="imperial-height" class="imperial-grid">
+                            <div style="position: relative;">
+                                <input type="number" id="height-ft" value="5" class="input-field medium">
+                                <span class="input-unit">ft</span>
+                            </div>
+                            <div style="position: relative;">
+                                <input type="number" id="height-in" value="9" class="input-field medium">
+                                <span class="input-unit">in</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="input-wrapper">
+                        <label class="field-label">Peso</label>
+                        <input type="number" id="weight" value="70" step="0.1" class="input-field large">
+                        <span id="weight-unit" class="input-unit">kg</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bloque Derecho: Resultados y Plan -->
+            <div style="display: flex; flex-direction: column; gap: 1rem;">
+                
+                <!-- Resultado General -->
+                <div class="custom-card style='overflow: hidden;'">
+                    <div class="result-card-decorator"></div>
+                    <h2 class="result-header">Diagnóstico</h2>
+                    
+                    <div class="result-display">
+                        <span id="bmi-value" class="result-value">22.9</span>
+                        <div id="bmi-badge" class="badge badge-healthy">
+                            Peso saludable
+                        </div>
+                    </div>
+
+                    <div class="gauge-container">
+                        <div class="gauge-segment" style="width: 18.5%; background-color: var(--sky-400);"></div>
+                        <div class="gauge-segment" style="width: 6.5%; background-color: var(--emerald-400);"></div>
+                        <div class="gauge-segment" style="width: 5%; background-color: var(--orange-400);"></div>
+                        <div class="gauge-segment" style="width: 70%; background-color: var(--red-400);"></div>
+                        <div id="gauge-marker" style="left: 22.9%;"></div>
+                    </div>
+                    <div class="gauge-labels">
+                        <span>15</span><span>18.5</span><span>25</span><span>30</span><span>40+</span>
+                    </div>
+                </div>
+
+                <!-- Hábitos y Dieta -->
+                <div class="info-grid">
+                    <!-- Columna Hábitos -->
+                    <div class="info-card">
+                        <h3 class="info-header">
+                            <i data-lucide="check-circle" size="18"></i> Hábitos Clave
+                        </h3>
+                        <div id="habits-container" class="dynamic-list">
+                            <!-- Dinámico -->
+                        </div>
+                    </div>
+
+                    <!-- Columna Plan Alimenticio -->
+                    <div class="info-card diet-card">
+                        <h3 class="info-header">
+                            <i data-lucide="utensils" size="18"></i> Plan Alimenticio
+                        </h3>
+                        <div id="diet-container" class="dynamic-list">
+                            <!-- Dinámico -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabla de Referencia -->
+        <div class="custom-card">
+            <h3 class="ref-header">
+                <i data-lucide="info" class="icon" style="width: 1.25rem; height: 1.25rem;"></i>
+                Composición corporal - Índice de masa corporal (IMC)
+            </h3>
+            
+            <div class="ref-grid">
+                <div class="ref-item underweight">
+                    <p class="ref-label">Peso inferior al normal</p>
+                    <p class="ref-val">Menos de 18.5</p>
+                </div>
+                <div class="ref-item normal">
+                    <p class="ref-label">Normal</p>
+                    <p class="ref-val">18.5 – 24.9</p>
+                </div>
+                <div class="ref-item overweight">
+                    <p class="ref-label">Peso superior al normal</p>
+                    <p class="ref-val">25.0 – 29.9</p>
+                </div>
+                <div class="ref-item obesity">
+                    <p class="ref-label">Obesidad</p>
+                    <p class="ref-val">Más de 30.0</p>
+                </div>
+            </div>
+            
+            <footer class="footer-note">
+                <p>Nota: Esta información es referencial. Consulta a un nutricionista antes de realizar cambios drásticos.</p>
+            </footer>
+        </div>
+
+    </div>
+
+    <script>
+        let state = { system: 'metric', gender: 'male', bmi: 22.9 };
+
+        const CATEGORIES = {
+            UNDERWEIGHT: { 
+                id: 'underweight', label: 'Bajo peso',
+                habits: [
+                    {i:'zap', t:'Superávit Calórico', d:'Ingiere más calorías de las que quemas diariamente.'},
+                    {i:'dumbbell', t:'Entrenamiento', d:'Prioriza ejercicios de fuerza para ganar masa muscular.'},
+                    {i:'moon', t:'Descanso Profundo', d:'Duerme 8 horas para optimizar la síntesis proteica.'}
+                ],
+                diet: [
+                    {t:'Desayuno', d:'Avena con frutos secos, mantequilla de maní y banana.'},
+                    {t:'Almuerzo', d:'Pasta integral con pollo, aguacate y aceite de oliva.'},
+                    {t:'Snack', d:'Batido de proteínas o yogur griego con granola.'},
+                    {t:'Cena', d:'Salmón o carne roja con camote y vegetales.'}
+                ]
+            },
+            HEALTHY: { 
+                id: 'healthy', label: 'Peso saludable',
+                habits: [
+                    {i:'activity', t:'Mantenimiento', d:'30 min de actividad física 5 veces por semana.'},
+                    {i:'droplets', t:'Hidratación', d:'Bebe entre 2 y 2.5 litros de agua al día.'},
+                    {i:'brain', t:'Control de Estrés', d:'Practica meditación o yoga para evitar el cortisol alto.'}
+                ],
+                diet: [
+                    {t:'Desayuno', d:'Huevos revueltos con espinacas y una tostada integral.'},
+                    {t:'Almuerzo', d:'Pechuga a la plancha con quinoa y ensalada verde.'},
+                    {t:'Snack', d:'Una pieza de fruta de temporada y un puñado de nueces.'},
+                    {t:'Cena', d:'Pescado blanco al horno con verduras al vapor.'}
+                ]
+            },
+            OVERWEIGHT: { 
+                id: 'overweight', label: 'Sobrepeso',
+                habits: [
+                    {i:'footprints', t:'Movimiento Diario', d:'Objetivo de 10,000 pasos diarios para activar el NEAT.'},
+                    {i:'clock', t:'Ayuno Circadiano', d:'Evita comer 3 horas antes de ir a dormir.'},
+                    {i:'clipboard-list', t:'Registro', d:'Anota lo que comes para ser consciente de las porciones.'}
+                ],
+                diet: [
+                    {t:'Desayuno', d:'Yogur natural sin azúcar con semillas de chía y frutos rojos.'},
+                    {t:'Almuerzo', d:'Ensalada de legumbres (lentejas o garbanzos) con mucha verdura.'},
+                    {t:'Snack', d:'Zanahorias baby con hummus o té verde.'},
+                    {t:'Cena', d:'Tortilla de claras con champiñones y ensalada de tomate.'}
+                ]
+            },
+            OBESITY: { 
+                id: 'obesity', label: 'Obesidad',
+                habits: [
+                    {i:'waves', t:'Bajo Impacto', d:'Natación o caminata ligera para proteger articulaciones.'},
+                    {i:'coffee', t:'Eliminar Azúcares', d:'Reduce al máximo ultraprocesados y bebidas azucaradas.'},
+                    {i:'stethoscope', t:'Seguimiento', d:'Chequeos médicos regulares de presión y glucosa.'}
+                ],
+                diet: [
+                    {t:'Desayuno', d:'Tostada de pan de centeno con queso fresco bajo en grasa.'},
+                    {t:'Almuerzo', d:'Proteína magra (pavo o tofu) con brócoli y media taza de arroz.'},
+                    {t:'Snack', d:'Manzana verde o infusión sin endulzar.'},
+                    {t:'Cena', d:'Sopa de vegetales casera (sin crema) con pollo desmechado.'}
+                ]
+            }
+        };
+
+        function setSystem(s) {
+            if (state.system === s) return;
+            state.system = s;
+            
+            document.getElementById('btn-metric').className = s === 'metric' ? 'toggle-btn active' : 'toggle-btn';
+            document.getElementById('btn-imperial').className = s === 'imperial' ? 'toggle-btn active' : 'toggle-btn';
+            
+            document.getElementById('metric-height').className = s === 'metric' ? 'metric-wrapper' : 'metric-wrapper hidden';
+            document.getElementById('imperial-height').className = s === 'imperial' ? 'imperial-grid active' : 'imperial-grid';
+            document.getElementById('weight-unit').innerText = s === 'metric' ? 'kg' : 'lb';
+            
+            const w = parseFloat(document.getElementById('weight').value);
+            if (s === 'imperial') {
+                document.getElementById('weight').value = (w * 2.20462).toFixed(1);
+                const h = parseFloat(document.getElementById('height-cm').value);
+                const totalIn = h / 2.54;
+                document.getElementById('height-ft').value = Math.floor(totalIn / 12);
+                document.getElementById('height-in').value = Math.round(totalIn % 12);
+            } else {
+                document.getElementById('weight').value = (w / 2.20462).toFixed(1);
+                const ft = parseFloat(document.getElementById('height-ft').value);
+                const inc = parseFloat(document.getElementById('height-in').value);
+                const h = ((ft * 12) + inc) * 2.54;
+                document.getElementById('height-cm').value = Math.round(h);
+            }
+            calculate();
+        }
+
+        function setGender(g) {
+            state.gender = g;
+            document.getElementById('gender-male').className = g === 'male' ? 'gender-btn active' : 'gender-btn';
+            document.getElementById('gender-female').className = g === 'female' ? 'gender-btn active' : 'gender-btn';
+            calculate();
+        }
+
+        function calculate() {
+            let weight = parseFloat(document.getElementById('weight').value) || 0;
+            let bmiValue = 0;
+            if (state.system === 'metric') {
+                let h = (parseFloat(document.getElementById('height-cm').value) || 0) / 100;
+                if (h > 0) bmiValue = weight / (h * h);
+            } else {
+                let ft = parseFloat(document.getElementById('height-ft').value) || 0;
+                let inc = parseFloat(document.getElementById('height-in').value) || 0;
+                let total = (ft * 12) + inc;
+                if (total > 0) bmiValue = (weight / (total * total)) * 703;
+            }
+            state.bmi = bmiValue > 0 ? parseFloat(bmiValue.toFixed(1)) : 0;
+            updateUI();
+        }
+
+        function updateUI() {
+            const bmiEl = document.getElementById('bmi-value');
+            const badgeEl = document.getElementById('bmi-badge');
+            const markerEl = document.getElementById('gauge-marker');
+            const habitsContainer = document.getElementById('habits-container');
+            const dietContainer = document.getElementById('diet-container');
+
+            if (state.bmi === 0) {
+                bmiEl.innerText = '--.-';
+                markerEl.style.left = "0%";
+                return;
+            }
+
+            bmiEl.innerText = state.bmi;
+            
+            let cat;
+            if (state.bmi < 18.5) cat = CATEGORIES.UNDERWEIGHT;
+            else if (state.bmi < 25) cat = CATEGORIES.HEALTHY;
+            else if (state.bmi < 30) cat = CATEGORIES.OVERWEIGHT;
+            else cat = CATEGORIES.OBESITY;
+
+            let position = 0;
+            if (state.bmi <= 30) {
+                position = state.bmi;
+            } else {
+                position = 30 + ((state.bmi - 30) / (45 - 30)) * 70;
+            }
+            
+            badgeEl.innerText = cat.label;
+            badgeEl.className = `badge badge-${cat.id}`;
+            markerEl.style.left = `${Math.min(Math.max(position, 0), 100)}%`;
+
+            // Render Habits using native classes
+            habitsContainer.innerHTML = cat.habits.map(h => `
+                <div class="habit-item">
+                    <div class="habit-icon-wrapper">
+                        <i data-lucide="${h.i}" style="width: 14px; height: 14px;"></i>
+                    </div>
+                    <div>
+                        <p class="habit-title">${h.t}</p>
+                        <p class="habit-desc">${h.d}</p>
+                    </div>
+                </div>
+            `).join('');
+
+            // Render Diet Plan using native classes
+            dietContainer.innerHTML = cat.diet.map(d => `
+                <div class="diet-item">
+                    <p class="diet-title">${d.t}</p>
+                    <p class="diet-desc">${d.d}</p>
+                </div>
+            `).join('');
+
+            lucide.createIcons();
+        }
+
+        ['weight', 'height-cm', 'height-ft', 'height-in', 'age'].forEach(id => {
+            document.getElementById(id).addEventListener('input', calculate);
+        });
+
+        window.onload = () => { lucide.createIcons(); calculate(); };
+    </script>
+</body>
+</html>
